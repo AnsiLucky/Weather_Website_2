@@ -52,6 +52,8 @@ module.exports = {
     "Cancel" : "Отменить",
     "Charts" : "ГРАФИКИ",
     "Chart" : "График",
+    "AddUser" : "Добавить Пользователя",
+    "CreateUser" : "Создать Пользователя",
   },
   "en": {
     "Language": "Language",
@@ -106,5 +108,7 @@ module.exports = {
     "Cancel" : "Cancel",
     "Charts" : "CHARTS",
     "Chart" : "Chart",
+    "AddUser" : "Add User",
+    "CreateUser" : "Create User",
   }
 }

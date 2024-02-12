@@ -11,20 +11,31 @@ const language = require('../config/language');
 // Home route
 router.get('/', checkAuthentificated, async (req, res) => {
   let city = req.query.city || 'Almaty';
+  const lang = req.session.language || 'en';
   const info = (await getAllInfo(city, req.session.language));
   if (city.toLowerCase() === "astana") city = "nur-sultan"
+  if (info.error !== undefined) {
+    return   res.render('index', {lang : language[lang], error : ['Input Correct City'] })
+  }
   if (req.query.city !== undefined) {
     const newResponse = new Response({userId: req.session.userId,
       info: info});
    await newResponse.save();
   }
-  const lang = req.session.language || 'en';
 
   res.render('index', {lang : language[lang], data : info , error : req.flash('error') })
 });
 
 router.get('/test', async (req, res) => {
-  res.json(language['en']);
+  let city = req.query.city || 'Almaty';
+  const info = (await getAllInfo(city, req.session.language));
+  if (city.toLowerCase() === "astana") city = "nur-sultan"
+  if (req.query.city !== undefined && info.error === undefined) {
+    const newResponse = new Response({userId: req.session.userId,
+      info: info});
+   await newResponse.save();
+  }
+  const lang = req.session.language || 'en';
 })
 
 router.get('/login', checkNotAuthentificated, (req, res) => {
@@ -35,7 +46,8 @@ router.get('/login', checkNotAuthentificated, (req, res) => {
 router.get('/history', checkAuthentificated, async (req, res) => {
   try {
     const lang = req.session.language || 'en';
-    res.render('history', { lang : language[lang], data: (await Response.find({ userId: req.session.userId }).sort({ timestamp: -1 })) });
+    const data = await Response.find({ userId: req.session.userId }).sort({ timestamp: -1 });
+    res.render('history', { lang : language[lang], data: data });
 } catch (error) {
     console.error('Error:', error);
     req.flash('Internal Server Error');
@@ -56,7 +68,7 @@ router.get('/admin', checkIsAdmin, async (req, res) => {
     lang : language[lang]});
 })
 
-router.get('/charts', checkIsAdmin, async (req, res) => {
+router.get('/charts', async (req, res) => {
   const lang = req.session.language || 'en';
   const city = req.query.city || 'Almaty';
   res.render('charts', { data: await getExtendedForecast(city, lang),
@@ -69,6 +81,11 @@ router.get('/editUser', checkIsAdmin, async (req, res) => {
   const lang = req.session.language || 'en';
   const user = await User.findOne({ _id });
   res.render('editUser', {lang : language[lang], user : user});
+})
+
+router.get('/addUser', checkIsAdmin, async (req, res) => {
+  const lang = req.session.language || 'en';
+  res.render('addUser', {lang : language[lang]});
 })
 
 router.get('/download-history-record/:recordId', async (req, res) => {

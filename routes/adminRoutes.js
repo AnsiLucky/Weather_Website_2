@@ -6,12 +6,22 @@ const User = require('../models/user');
 // Add User Route
 router.post('/addUser', async (req, res) => {
   try {
-    const { username, password, isAdmin } = req.body;
-    const newUser = new User({ username, password, isAdmin });
+    const { username, email, password, isAdmin } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      req.flash("error", "User Already Exist");
+      return res.redirect('/login');
+    }
+
+    const newUser = new User({ username, email, password, isAdmin });
     await newUser.save();
-    res.status(201).json({ message: 'User added successfully' });
+    req.flash('success', 'User added successfully');
+    res.redirect('/admin');
   } catch (error) {
-    res.status(500).json({ error: 'Error adding user' });
+    console.log(error);
+    req.flash('error', 'Error adding user');
+    res.redirect('/admin');
   }
 });
 
