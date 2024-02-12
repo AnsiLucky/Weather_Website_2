@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="icon" href="/public/img/weather.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="/public/css/styles.css">
+    
+      <!-- Font Awesome Icons -->
+    <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css">
+    <script src="https://kit.fontawesome.com/0724e5b9c8.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+    <section class="sub-header w-100 text-center text-light" >
+        <nav class="justify-content-between align-items-center d-flex py-5">
+            <a href="/"><img width="100px" src="public/img/weather.png" id="logo" alt="logo.png"></a>
+            <a class="navbar-brand fs-1 text-info fw-bolder px-3 py-1" href="/">WEATHER APP</a>
+
+            <div class="nav-links d-flex flex-grow-1 justify-content-end h-100 align-items-center mt-2">
+                <ul class="list-unstyled m-0 h-100">
+                    <i class="fa fa-times" onclick="hideMenu()"></i>
+                    <li class="d-inline-block px-3 py-1 position-relative"><a href="/"
+                            class="text-decoration-none text-light fs-6"><%= lang.HOME %></a></li>
+                    <!-- <li class="d-inline-block px-3 py-1 position-relative"><a href="#"
+                            class="text-decoration-none text-light fs-6">WEATHER</a></li> -->
+                    <li class="d-inline-block px-3 py-1 position-relative"><a href="/history"
+                            class="text-decoration-none text-light fs-6"><%= lang.HISTORY %></a></li>
+                            <li class="d-inline-block px-3 py-1 position-relative"><a href="/charts"
+                                class="text-decoration-none text-light fs-6"><%= lang.Charts %></a></li>
+                    <li class="language-selector">
+                        <select id="languageDropdown" class="form-select bg-secondary text-light">
+                            <option selected disabled><%= lang.Language %></option>
+                            <option value="en">English</option>
+                            <option value="ru">Русский</option>
+                            </select>
+                    </li>
+                    <li class="d-inline-block px-3 py-1 position-relative">
+                        <a href="/profile"class="text-decoration-none text-light fs-6"><%= lang.PROFILE %></a></li>
+                </ul>
+            </div>
+            <i class="fa-solid fa-bars" onclick="showMenu()"></i>
+        </nav>
+    </section>
+
+    <% if (error[0] !== undefined) { %>
+    <div class="alert alert-danger d-flex align-items-center" role="alert">
+        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+        <div>
+          <%= error[0] %>
+        </div>
+      </div>
+      <% } %>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-6">
+                <form id="cityForm" action="">
+
+                <label for="cityInput"><%= lang.EnterCity %></label>
+                <div class="input-group mb-3">
+                    <input type="text" id="cityInput" class="form-control input" placeholder="<%= lang.City %>" aria-label="City"
+                        aria-describedby="button-addon2">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="submit" id="button-addon2"><%= lang.GetWeather %></button>
+                    </div>
+                </div>
+            </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="currentWeatherResult" class="card col-lg-6">
+                <div class="card-body">
+                    <h5 class="card-title"><%= lang.CurrentWeather %></h5>
+                    <hr>
+                    <div id="currentWeatherContent" class="row">
+                        <% if (typeof data !== 'undefined') { %>
+                        <div class="col-md-6">
+                            <p><strong><%= lang.Location %>:</strong> <%= data.current.City %></p>
+                            <p><strong><%= lang.Temperature %>:</strong> <%= data.current.Temperature %> °C</p>
+                            <p><strong><%= lang.FeelsLike %>:</strong> <%= data.current.Feels %> °C</p>
+                            <p><strong><%= lang.Weather %>:</strong> <%= data.current.Weather %></p>
+                            <p><strong><%= lang.WindSpeed %>:</strong> <%= data.current.WindSpeed %> m/s</p>
+                            <p><strong><%= lang.Humidity %>:</strong> <%= data.current.Humidity %>%</p>
+                            <p><strong><%= lang.Pressure %>:</strong> <%= data.current.Pressure %> hPa</p>
+                            <p><strong><%= lang.Country %>:</strong> <%= data.current.Country %></p>
+                            <p><strong><%= lang.Coordinates %>:</strong> lat:<%= data.current.Latitude %>; lon:<%= data.current.Longitude %></p>
+                        </div>
+                          <div class="col-md-6 text-center">
+                            <img src="<%= data.current.Icon %>" alt="Weather Icon" style="width: 80px; height: 80px;">
+                          </div>
+                          <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div id="map" class="mb-4"></div>
+            </div>
+        </div>
+
+        <section class="mt-5">
+            <div class="mt-5">
+                <h5 class="card-title"><%= lang.WeatherThreeHours %></h5>
+                <div id="threeHourForecast" class="list-group">
+                    <ul class="list-group">
+                        <% if (typeof data !== 'undefined') { %>
+                        <% data.forecast3Hours.forEach((day) => { %>
+                          <li class="list-group-item">
+                            <div class="row">
+                              <div class="col-md-2">
+                                <p><%= lang.DateTime %>: <%= new Date(day.Epoch * 1000).toLocaleString() %></p>
+                            </div>
+                              <div class="col-md-2">
+                                <img src="<%= day.Icon %>" style="width: 40px; height: 40px;">
+                                <span><%= day.Weather %></span>
+                              </div>
+                              <div class="col-md-3">
+                                <p><%= lang.Temperature %>: <%= day.Temperature %>°C</p>
+                              </div>
+                              <div class="col-md-3">
+                                <p><%= lang.WindSpeed %>: <%= day.WindSpeed %> m/s</p>
+                              </div>
+                              <div class="col-md-2">
+                                <p><%= lang.Humidity %>: <%= day.Humidity %>%</p>
+                              </div>
+                            </div>
+                          </li>
+                        <% }) %>
+                        <% } %>
+                      </ul>
+                </div>            
+            </div>
+        </section>
+
+        <section class="mt-5">
+            <div class="mt-5">
+                <h5 class="card-title"><%= lang.ExtendedForecast %></h5>
+                <div id="extendedForecastList" class="list-group">
+                    <ul class="list-group">
+                        <% if (typeof data !== 'undefined') { %>
+                        <% data.forecast14Days.forEach((day) => { %>
+                          <li class="list-group-item">
+                            <div class="row">
+                              <div class="col-md-2">
+                                <p><%= lang.Date %>: <%= new Date(day.Epoch * 1000).toLocaleDateString() %></p>
+                              </div>
+                              <div class="col-md-2">
+                                <img src="<%= day.Icon %>" style="width: 40px; height: 40px;">
+                                <span><%= day.Weather %></span>
+                              </div>
+                              <div class="col-md-3">
+                                <p><%= lang.MinMax %>: <%= day.Min_Temperature %>°C / <%= day.Max_Temperature %>°C</p>
+                              </div>
+                              <div class="col-md-3">
+                                <p><%= lang.WindSpeed %>: <%= day.WindSpeed %> m/s</p>
+                              </div>
+                              <div class="col-md-2">
+                                <p><%= lang.Humidity %>: <%= day.Humidity %>%</p>
+                              </div>
+                            </div>
+                          </li>
+                        <% }) %>
+                        <% } %>
+                      </ul>
+                </div>
+            </div>
+        </section>
+
+        <h2 class="mt-4" style="text-align: center;"></h2>
+
+        <div id="cityInfoResult" class="mt-4">
+            <div class="mt-4 card">
+                <div class="card-body">
+                    <h5 class="card-title"><%= lang.CityInformation %></h5>
+                    <hr>
+                    <% if (typeof data !== 'undefined') { %>
+                    <p><strong><%= lang.Name %>:</strong> <%= data.cityInfo.name %></p>
+                    <p><strong><%= lang.Latitude %>:</strong> <%= data.cityInfo.latitude %></p>
+                    <p><strong><%= lang.Longitude %>:</strong> <%= data.cityInfo.longitude %></p>
+                    <p><strong><%= lang.Country %>:</strong> <%= data.cityInfo.country %></p>
+                    <p><strong><%= lang.Population %>:</strong> <%= data.cityInfo.population %></p>
+                    <p><strong><%= lang.IsCapital %>:</strong> <%= data.cityInfo.is_capital ? "Yes" : "No" %></p>
+                    <% } %>
+                </div>
+            </div>
+            
+        </div>
+
+
+        <!-- footer -->
+        <section id="footer" class="footer text-center mb-4 mt-0">
+            <div class="rounded-5 mt-0 mb-1 py-5 px-0">
+                <h4 class="h6 mt-3 mb-0 text-center fw-semibold"><%= lang.AboutUs %></h4>
+                <hr width="6%" class="text-center m-auto">
+                <p class="text-secondary p-2 lh-base fw-light fs-14px mt-4">Weather WebSite.<br> Assignment2 of
+                    WEB
+                    Technologies(Back-End).</p>
+
+                <div class="row align-items-center gx-0 justify-content-between m-auto w-50">
+                    <div class="col d-flex justify-content-center">
+                        <a target="_blank" href="https://www.instagram.com/_ansi_sh_/">
+                            <i class="fa fa-instagram text-info"></i>
+                        </a>
+                    </div>
+                    <div class="col d-flex justify-content-center">
+                        <a target="_blank" href="https://t.me/ansinitro">
+                            <i class="fa fa-telegram text-info"></i>
+                        </a>
+                    </div>
+                    <div class="col d-flex justify-content-center">
+                        <a target="_blank" href="https://www.tiktok.com/@_ansi_sh_">
+                            <i class="fa-brands fa-tiktok text-info"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <p class="text-secondary p-2 lh-base fw-light fs-14px mt-4">®Made with <i class="fa fa-heart-o"></i> 
+                    by
+                    Angsar<br>
+                    <i class="fa fa-heart-o"></i>
+                    SE-2202 <i class="fa fa-heart-o"></i>
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <% if (typeof data !== 'undefined') { %>
+        <script>let data = <%- JSON.stringify(data) %>;</script>
+    <% } %>
+    <script src="/public/js/weather.js"></script>
+    <script src="/public/js/language.js"></script>
+</body>
+
+</html>

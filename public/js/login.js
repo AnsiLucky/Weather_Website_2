@@ -1,0 +1,135 @@
+// SingUp and SignIn Buttons
+let signUpBtn = document.getElementById("signUpBtn");
+let signInBtn = document.getElementById("signInBtn");
+let nameField = document.getElementById("nameField");
+let title = document.getElementById("title");
+let forgotPasswd = document.getElementById("forgotPasswd");
+
+signInBtn.onclick = function () {
+  nameField.style.maxHeight = "0";
+  title.innerHTML = language.Login;
+  signUpBtn.classList.add("bg-secondary");
+  signUpBtn.classList.remove("bg-info");
+  signInBtn.classList.remove("bg-secondary");
+  signInBtn.classList.add("bg-info");
+  forgotPasswd.classList.remove("visually-hidden");
+};
+
+signUpBtn.onclick = function () {
+  nameField.style.maxHeight = "60px";
+  title.innerHTML = language.SignUp;
+  signUpBtn.classList.add("bg-info");
+  signUpBtn.classList.remove("bg-secondary");
+  signInBtn.classList.add("bg-secondary");
+  signInBtn.classList.remove("bg-info");
+  forgotPasswd.classList.add("visually-hidden");
+};
+
+// Form Validation
+const form = document.getElementById("form");
+const namee = document.getElementById("name");
+const email = document.getElementById("email");
+const passwd = document.getElementById("passwd");
+const signin = document.getElementById("signInBtn");
+const signup = document.getElementById("signUpBtn");
+
+form.addEventListener("submit", function (event) {
+  event.preventDefault();
+  if (form.getAttribute("action") === "/auth/login") {
+    if (email.classList.value.includes('is-valid') && passwd.classList.value.includes('is-valid')) {
+      form.submit();
+    } else {
+      alert("Please enter both email and password for Sign In.");
+    }
+  } else {
+    if (namee.classList.value.includes('is-valid') && email.classList.value.includes('is-valid') && passwd.classList.value.includes('is-valid')) {
+      form.submit();
+    } else {
+      alert("Name: must be capitalized, email, and password for Sign Up.");
+    }
+  }
+});
+
+signin.addEventListener("click", function () {
+  form.action = "/auth/login";
+});
+
+signup.addEventListener("click", function () {
+  form.action = "/auth/register";
+});
+
+namee.addEventListener("input", function (element) {
+  isValidName(namee, element);
+});
+
+email.addEventListener("input", function (element) {
+  isValidEmail(email, element);
+});
+
+passwd.addEventListener("input", function (element) {
+  isValidPassword(passwd, element);
+});
+
+function isValidName(el, element) {
+  let val = element.target.value.trim();
+  el.setAttribute("value", val);
+  let namee = element.target.value.trim();
+  const regex = new RegExp("^[A-Z][a-z]+");
+  if (regex.test(namee) && namee.length > 2 && namee.length < 50) {
+    setValid(el);
+    return true;
+  } else {
+    setInvalid(el);
+    return false;
+  }
+}
+
+function isValidPassword(el, element) {
+  let val = element.target.value.trim();
+  el.setAttribute("value", val);
+  let password = element.target.value;
+  if (password.length < 8) {
+    setInvalid(el);
+    return false;
+  }
+
+  var hasLetter = /[a-zA-Z]/.test(password);
+  var hasNumber = /\d/.test(password);
+  var hasSpecialChar = /[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(password);
+
+  if (hasLetter && hasNumber && hasSpecialChar) {
+    setValid(el);
+    return true;
+  } else {
+    setInvalid(el);
+    return false;
+  }
+}
+
+function isValidEmail(el, element) {
+  const re =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  let val = element.target.value.trim();
+  el.setAttribute("value", val);
+
+  if (val === "") {
+    setInvalid(el);
+    return false;
+  } else if (!re.test(String(val).toLowerCase())) {
+    setInvalid(el);
+    return false;
+  } else {
+    setValid(el);
+  }
+  return true;
+}
+
+function setInvalid(element) {
+  element.classList.add("is-invalid");
+  element.classList.remove("is-valid");
+}
+
+function setValid(element) {
+  element.classList.add("is-valid");
+  element.classList.remove("is-invalid");
+}
