@@ -22,7 +22,7 @@ node start
 by default server will start at `http://localhost:3000`
 
 ## For Admin Status
-
+`localhost:3000/admin` - by default
 - login : `admin@gmail.com`
 - password : `admin_123`
 
