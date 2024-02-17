@@ -16,7 +16,7 @@ Before you begin, ensure you have the following installed:
 git clone https://github.com/AnsiLucky/Weather_Website_2
 cd Weather_Website_2
 npm install
-node start
+node run start
 ```
 
 by default server will start at `http://localhost:3000`
