@@ -2,7 +2,7 @@ const express = require('express');
 require('express-flash');
 const router = express.Router();
 const User = require('../models/user');
-const Quiz = require('../models/Quiz');
+const Quiz = require('../models/quiz');
 const CityCard = require('../models/cityCard');
 const {checkAuthentificated, checkNotAuthentificated, checkIsAdmin} = require('../utils/checks');
 const { getAllInfo, getFiftyDaytVisualCrossing } = require('../utils/response');

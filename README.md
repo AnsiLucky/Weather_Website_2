@@ -41,6 +41,7 @@ by default server will start at `http://localhost:3000`
     - Endpoint: `https://source.unsplash.com/1600x900`
     - Usage: Random Photos from city
 
+
 ## File Structure
 
 The project has the following folder structure:
