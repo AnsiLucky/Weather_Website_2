@@ -1,4 +1,4 @@
-const { OPEN_WEATHER_API, WEATHER_API, CITY_API } = require('../config/api');
+const { OPEN_WEATHER_API, WEATHER_API, CITY_API, CITY_API_DEV_ME } = require('../config/api');
 
 async function getAllInfo(city, lang) {
   if (!city) {
@@ -9,8 +9,10 @@ async function getAllInfo(city, lang) {
     const [current, forecast3Hours, forecast14Days, cityInfo] = await Promise.all([
       getCurrentWeather(city, lang),
       getThreeHours(city, lang),
-      getExtendedForecast(city, lang), 
-      getCityInfo(city, lang),
+      // getExtendedForecast(city, lang), 
+      getFiftyDaytVisualCrossing(city, lang),
+      getCityInfoDevMe(city, lang),
+      // getCityInfo(city, lang),
     ]);
 
     return {
@@ -24,6 +26,16 @@ async function getAllInfo(city, lang) {
     return { error: error.message };
   }
 }
+
+async function getFiftyDaytVisualCrossing(city, lang) {
+  const apiUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${city}?unitGroup=metric&key=8UYU2P2TNFAKFXZHKUJFC78DR&lang=${lang}`;
+  const data = await dataByLink(apiUrl);
+  
+  return data.days.map(day => 
+    getVisualCrossingApiDict(day, data)
+  );
+}
+
 
 // Routes
 async function getCurrentWeather(city, lang) {
@@ -59,10 +71,46 @@ async function getCityInfo(city, lang) {
 
   return getCityInfoDict(data[0]);
 }
+
 function getCityInfoDict(data) {
   if (data == undefined) return {name: null, latitude: null, longitude: null, country: null,population: null,is_capital: null  };
   const { name, latitude, longitude, country, population, is_capital } = data;
   return { name, latitude, longitude, country, population, is_capital };
+}
+
+async function getCityInfoDevMe(city, lang) {
+  const apiUrl = `https://dev.me/api/module-app/v1-get-city-details?name=${city}`;
+  const data = await dataByLink(apiUrl, {headers: {"X-Api-Key": CITY_API_DEV_ME}});
+  console.log(data);
+  return getCityInfoDictDevMe(data);
+}
+
+function getCityInfoDictDevMe(data) {
+  if (data == undefined) return {name: null, latitude: null, longitude: null, countryName: null  };
+  const { name, latitude, longitude, countryName } = data;
+  return { name, latitude, longitude, countryName };
+}
+
+function getVisualCrossingApiDict(data, cityData) {
+  const result = {
+    Epoch: data.datetimeEpoch,
+    Temperature: data.temp,
+    Min_Temperature: data.tempmin,
+    Max_Temperature: data.tempmax,
+    Feels: data.feelslike,
+    Weather: data.description || data.conditions,
+    WindSpeed: data.windspeed,
+    Humidity: data.humidity,
+    Pressure: data.pressure,
+  };
+  if (cityData !== undefined) {
+    result.City = cityData.address;
+    result.Country = cityData.resolvedAddress;
+    result.Latitude = cityData.latitude;
+    result.Longitude = cityData.longitude;
+  }
+
+  return result;
 }
 
 function getWeatherApiDict(data, epoch) {
@@ -82,10 +130,6 @@ function getWeatherApiDict(data, epoch) {
 }
 
 function getOpenWeatherApiDict(data, cityData) {
-  //   City: city.name
-//   Country: city.country
-//   Coordination_lat: city.lat
-//   Coordination_lon: city.lon
   const { dt, main, weather, wind } = data;
   const result = {
     Epoch: dt,
@@ -121,4 +165,4 @@ async function dataByLink(link, option) {
   return data;
 }
 
-module.exports = { getAllInfo, getExtendedForecast }
+module.exports = { getAllInfo, getFiftyDaytVisualCrossing }

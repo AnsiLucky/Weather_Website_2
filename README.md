@@ -31,11 +31,11 @@ by default server will start at `http://localhost:3000`
 1.  **OpenWeatherMap API**
     - Endpoint: `http://api.openweathermap.org/data/2.5/forecast`
     - Usage: Weahter Info
-2.  **WeatherAPI**
-    - Endpoint: `http://api.weatherapi.com/v1/forecast.json`
+2.  **Visual Crossing**
+    - Endpoint: `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/`
     - Usage: Weahter Info
-3.  **City Info API**
-    - Endpoint: `https://api.api-ninjas.com/v1/city`
+3.  **City Info API Dev Me**
+    - Endpoint: `https://dev.me/api/module-app/v1-get-city-details?name=${city}`
     - Usage: City Info
 4.  **Source Unsplash API**
     - Endpoint: `https://source.unsplash.com/1600x900`

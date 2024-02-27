@@ -2,8 +2,10 @@ const express = require('express');
 require('express-flash');
 const router = express.Router();
 const User = require('../models/user');
+const Quiz = require('../models/Quiz');
+const CityCard = require('../models/cityCard');
 const {checkAuthentificated, checkNotAuthentificated, checkIsAdmin} = require('../utils/checks');
-const { getAllInfo, getExtendedForecast } = require('../utils/response');
+const { getAllInfo, getFiftyDaytVisualCrossing } = require('../utils/response');
 const Response = require('../models/response');
 const  generatePDF = require('../utils/pdfCreator');
 const language = require('../config/language');
@@ -23,19 +25,126 @@ router.get('/', checkAuthentificated, async (req, res) => {
    await newResponse.save();
   }
 
-  res.render('index', {lang : language[lang], data : info , error : req.flash('error') })
+  res.render('index', {lang : language[lang], data : info , error : req.flash('error'),  cityCards : await CityCard.find()})
 });
 
-router.get('/test', async (req, res) => {
-  let city = req.query.city || 'Almaty';
-  const info = (await getAllInfo(city, req.session.language));
-  if (city.toLowerCase() === "astana") city = "nur-sultan"
-  if (req.query.city !== undefined && info.error === undefined) {
-    const newResponse = new Response({userId: req.session.userId,
-      info: info});
-   await newResponse.save();
+// routes/quiz.js
+router.get('/quiz', async (req, res) => {
+  try {
+    const quizzes = await Quiz.find();
+    const lang = req.session.language || 'en';
+
+    res.render('quiz', { quizzes: quizzes, lang:  language[lang] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
   }
-  const lang = req.session.language || 'en';
+});
+
+router.post('/quiz/submit', async (req, res) => {
+  try {
+    const answers = req.body; // Assuming form data contains answers in the format { answer0: '0', answer1: '1', ... }
+    const quizIds = Object.keys(answers);
+    
+    let score = 0;
+    for (const quizId of quizIds) {
+      const quiz = await Quiz.findById(quizId.split("|")[0]);
+      if (!quiz) {
+        console.error(`Quiz with ID ${quizId.split("|")[1]} not found`);
+        continue;
+      }
+      const selectedOptionIndex = parseInt(answers[quizId]);
+      if (selectedOptionIndex === quiz.correctAnswer) {
+        score++;
+      }
+    }
+    const totalQuestions = quizIds.length;
+    const lang = req.session.language || 'en';
+    res.render('quiz-results', { score, totalQuestions, lang: language[lang] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Internal Server Error');
+  }
+}); 
+
+router.get('/test', async (req, res) => {
+  try {
+    // Sample quiz questions in both English and Russian
+    const sampleQuestions = [
+      {
+        question: {
+          en: "What is the primary cause of wind?",
+          ru: "Что является основной причиной ветра?"
+        },
+        options: {
+          en: ["Rotation of the Earth", "Differential heating of the Earth's surface", "Movement of ocean currents", "Changes in atmospheric pressure"],
+          ru: ["Вращение Земли", "Дифференциальное нагревание поверхности Земли", "Движение океанских течений", "Изменения атмосферного давления"]
+        },
+        correctAnswer: 1,
+        category: "Weather",
+        difficultyLevel: "Medium"
+      },
+      {
+        question: {
+          en: "Which of the following is NOT a type of precipitation?",
+          ru: "Какой из перечисленных не является типом осадков?"
+        },
+        options: {
+          en: ["Rain", "Snow", "Hail", "Sleet"],
+          ru: ["Дождь", "Снег", "Град", "Слякоть"]
+        },
+        correctAnswer: 0,
+        category: "Weather",
+        difficultyLevel: "Easy"
+      },
+      {
+        question: {
+          en: "What is the name for a rotating column of air in contact with both the surface of the Earth and a cumulonimbus cloud?",
+          ru: "Как называется вращающаяся колонна воздуха, контактирующая с поверхностью Земли и кучевым дождевым облаком?"
+        },
+        options: {
+          en: ["Tornado", "Hurricane", "Typhoon", "Cyclone"],
+          ru: ["Торнадо", "Ураган", "Тайфун", "Циклон"]
+        },
+        correctAnswer: 0,
+        category: "Weather",
+        difficultyLevel: "Hard"
+      },
+      {
+        question: {
+          en: "What causes the phenomenon known as the Northern Lights?",
+          ru: "Что вызывает явление, известное как северное сияние?"
+        },
+        options: {
+          en: ["Reflection of sunlight by the moon's surface", "Ionization of gases in the Earth's atmosphere", "Bioluminescence of marine organisms", "Emission of light from the Earth's core"],
+          ru: ["Отражение солнечного света от поверхности Луны", "Ионизация газов в атмосфере Земли", "Биолюминесценция морских организмов", "Излучение света из недр Земли"]
+        },
+        correctAnswer: 1,
+        category: "Astronomy",
+        difficultyLevel: "Medium"
+      },
+      {
+        question: {
+          en: "Which planet is known as the 'Red Planet'?",
+          ru: "Какая планета известна как 'Красная планета'?"
+        },
+        options: {
+          en: ["Venus", "Mars", "Jupiter", "Saturn"],
+          ru: ["Венера", "Марс", "Юпитер", "Сатурн"]
+        },
+        correctAnswer: 1,
+        category: "Astronomy",
+        difficultyLevel: "Easy"
+      }
+    ];
+
+    // Insert the sample questions into the database
+    await Quiz.insertMany(sampleQuestions);
+    console.log('Sample questions inserted successfully');
+  } catch (err) {
+    console.error('Error inserting sample questions:', err);
+  }
+
 })
 
 router.get('/login', checkNotAuthentificated, (req, res) => {
@@ -63,6 +172,7 @@ router.get('/profile', checkAuthentificated, async (req, res) => {
 router.get('/admin', checkIsAdmin, async (req, res) => {
   const lang = req.session.language || 'en';
   res.render('admin', { users : await User.find(), 
+    cityCards : await CityCard.find(),
     message : {success: req.flash('success'), 
     error : req.flash('error' )}, 
     lang : language[lang]});
@@ -83,10 +193,23 @@ router.get('/editUser', checkIsAdmin, async (req, res) => {
   res.render('editUser', {lang : language[lang], user : user});
 })
 
+router.get('/editCityCard/:id', checkIsAdmin, async (req, res) => {
+  const _id = req.params.id;
+  const lang = req.session.language || 'en';
+  const card = await CityCard.findOne({ _id });
+  res.render('editCard', {lang : language[lang], card: card});
+})
+
 router.get('/addUser', checkIsAdmin, async (req, res) => {
   const lang = req.session.language || 'en';
   res.render('addUser', {lang : language[lang]});
 })
+
+router.get('/addCityCard', checkIsAdmin, async (req, res) => {
+  const lang = req.session.language || 'en';
+  res.render('addCard', {lang : language[lang]});
+})
+
 
 router.get('/download-history-record/:recordId', async (req, res) => {
   const { recordId } = req.params; 
