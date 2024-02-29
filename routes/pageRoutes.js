@@ -181,7 +181,7 @@ router.get('/admin', checkIsAdmin, async (req, res) => {
 router.get('/charts', async (req, res) => {
   const lang = req.session.language || 'en';
   const city = req.query.city || 'Almaty';
-  res.render('charts', { data: await getExtendedForecast(city, lang),
+  res.render('charts', { data: await getFiftyDaytVisualCrossing(city, lang),
     lang : language[lang],
     username: req.session.username,});
 })
